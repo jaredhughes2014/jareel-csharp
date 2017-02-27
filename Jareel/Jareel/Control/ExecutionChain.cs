@@ -22,7 +22,7 @@ namespace Jareel
         /// <summary>
         /// The abstract controller that executes at this execution chain
         /// </summary>
-        public AbstractController AbstractController { get; set; }
+        internal AbstractController AbstractController { get; set; }
 
         /// <summary>
         /// The number of parent chains that have executed
@@ -32,7 +32,7 @@ namespace Jareel
         /// <summary>
         /// Initializes this chain
         /// </summary>
-        public AbstractExecutionChain()
+        internal AbstractExecutionChain()
         {
             Children = new List<AbstractExecutionChain>();
             Parents = new List<AbstractExecutionChain>();
@@ -41,7 +41,7 @@ namespace Jareel
         /// <summary>
         /// Resets this chain to its initial state
         /// </summary>
-        public void Reset()
+        internal void Reset()
         {
             m_executed = 0;
         }
@@ -65,7 +65,7 @@ namespace Jareel
         /// as a parent
         /// </summary>
         /// <param name="child">The child execution chain</param>
-        public void AddChild(AbstractExecutionChain child)
+        internal void AddChild(AbstractExecutionChain child)
         {
             Children.Add(child);
             child.Parents.Add(this);
@@ -74,7 +74,7 @@ namespace Jareel
         /// <summary>
         /// Notifies all children that this chain has executed
         /// </summary>
-        public virtual void Execute()
+        internal virtual void Execute()
         {
             foreach (var child in Children) {
                 child.NotifyReady();
@@ -135,7 +135,7 @@ namespace Jareel
         /// for child execution chains, then notifies those chains that this parent has
         /// terminated
         /// </summary>
-        public override void Execute()
+        internal override void Execute()
         {
             Controller.Update();
             foreach (var adapter in m_adapters) {
@@ -157,7 +157,7 @@ namespace Jareel
         /// <typeparam name="D">Controller type of the child chain</typeparam>
         /// <param name="adapter">Function called to adapt the parent chain's state to the child state</param>
         /// <returns>New execution chain operating with a controller of type D</returns>
-        internal ExecutionChain<T, D> Branch<T, D>(Action<S, T> adapter)
+        public ExecutionChain<T, D> Branch<T, D>(Action<S, T> adapter)
             where T : State, new() where D : StateController<T>, new()
         {
             var child = new ExecutionChain<T, D>();
@@ -176,7 +176,7 @@ namespace Jareel
         /// <param name="child">Chain being added to the parent as a child</param>
         /// <param name="adapter">Function called to adapt the parent chain's state to the child state</param>
         /// <returns>New execution chain operating with a controller of type D</returns>
-        internal ExecutionChain<T, D> Join<T, D>(ExecutionChain<T, D> child, Action<S, T> adapter)
+        public ExecutionChain<T, D> Join<T, D>(ExecutionChain<T, D> child, Action<S, T> adapter)
             where T : State, new() where D : StateController<T>, new()
         {
             AddAdapter(child, adapter);
