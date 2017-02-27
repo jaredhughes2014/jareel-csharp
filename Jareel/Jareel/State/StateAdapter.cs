@@ -65,7 +65,7 @@ namespace Jareel
         public override void Adapt()
         {
             _adaptationCallback(_sourceController.CloneState(), _targetController.State);
-            _targetController.Adapted = true;
+            _targetController.Dirty = true;
         }
     }
 }

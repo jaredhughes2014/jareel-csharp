@@ -137,9 +137,10 @@ namespace Jareel
         /// </summary>
         internal override void Execute()
         {
-            Controller.Update();
-            foreach (var adapter in m_adapters) {
-                adapter.Adapt();
+            if (Controller.Update()) {
+                foreach (var adapter in m_adapters) {
+                    adapter.Adapt();
+                }
             }
 
             base.Execute();

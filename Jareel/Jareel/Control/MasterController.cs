@@ -21,11 +21,12 @@ namespace Jareel
         {
             get
             {
-                var controllers = new List<AbstractController>();
+                var controllerMap = new Dictionary<Type, AbstractController>();
+
                 foreach (var chain in Chains) {
-                    RecursiveControllerExtraction(chain, ref controllers);
+                    RecursiveControllerExtraction(chain, controllerMap);
                 }
-                return controllers.ToArray();
+                return controllerMap.Select(p => p.Value).ToArray();
             }
         }
 
@@ -35,12 +36,17 @@ namespace Jareel
         /// its children as well. This equates to a depth-first search in a B-tree
         /// </summary>
         /// <param name="chain">The chain to recursively add all children from</param>
-        /// <param name="accum">Reference list used to store each child controller</param>
-        private void RecursiveControllerExtraction(AbstractExecutionChain chain, ref List<AbstractController> accum)
+        /// <param name="accum">Reference dictionary used to store each child controller</param>
+        private void RecursiveControllerExtraction(AbstractExecutionChain chain, Dictionary<Type, AbstractController> accum)
         {
-            accum.Add(chain.AbstractController);
+            // If a controller type has already been encountered, this will assume it is a child of multiple controllers
+            var controllerType = chain.AbstractController.GetType();
+            if (!accum.ContainsKey(controllerType)) {
+                accum.Add(controllerType, chain.AbstractController);
+            }
+
             foreach (var child in chain.Children) {
-                RecursiveControllerExtraction(child, ref accum);
+                RecursiveControllerExtraction(child, accum);
             }
         }
 
