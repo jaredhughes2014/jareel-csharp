@@ -61,6 +61,7 @@ namespace Jareel
         protected AbstractController()
         {
             Listeners = new ListenerConverter(this);
+            Subscribers = new List<AbstractStateSubscriber>();
         }
 
         #endregion
@@ -158,6 +159,8 @@ namespace Jareel
         {
             var sub = CreateSubscriber();
             Subscribers.Add(sub);
+
+            sub.AbstractState = AbstractCloneState();
             return sub;
         }
 

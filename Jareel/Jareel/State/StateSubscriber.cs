@@ -15,12 +15,29 @@ namespace Jareel
         /// <summary>
         /// The top-level state type. This is not used by the user
         /// </summary>
-        internal State AbstractState { get; set; }
+        private State m_abstractState;
+        internal State AbstractState
+        {
+            get {
+                Updated = false;
+                return m_abstractState;
+            }
+            set {
+                Updated = true;
+                m_abstractState = value;
+            }
+        }
 
         /// <summary>
         /// Unique identifier used to access/remove state subscribers
         /// </summary>
         internal string ID { get; private set; }
+
+        /// <summary>
+        /// If true, this subscriber has been updated since the last time
+        /// the state was accessed
+        /// </summary>
+        public bool Updated { get; set; }
 
         #endregion
 
