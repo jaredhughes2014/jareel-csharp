@@ -123,7 +123,7 @@ namespace Jareel
         {
             var packaged = Controllers.ToDictionary(p => p.StateName,
                                                     q => (object)q.DataMap);
-            return JsonWriter.Write(packaged);
+            return Json.Write(packaged);
         }
 
         /// <summary>
@@ -133,7 +133,7 @@ namespace Jareel
         /// <param name="exportString">JSON string previously exported from this system</param>
         public void ImportState(string exportString)
         {
-            var data = (Dictionary<string, object>)JsonReader.Read(exportString);
+            var data = (Dictionary<string, object>)Json.Read(exportString);
 
             foreach (var controller in Controllers) {
                 controller.ImportState((Dictionary<string, object>)data[controller.StateName]);

@@ -35,6 +35,18 @@ namespace Jareel
         {
             get
             {
+                return DataContainers.Where(p => p.Persistent).ToDictionary(p => p.Name, q => q.Value);
+            }
+        }
+
+        /// <summary>
+        /// The entire data map. This will include non-persistent data and is mostly for debug purposes.
+        /// This exported map can still be used to hydrate the state
+        /// </summary>
+        public Dictionary<string, object> CompleteDataMap
+        {
+            get
+            {
                 return DataContainers.ToDictionary(p => p.Name, q => q.Value);
             }
         }
@@ -100,8 +112,8 @@ namespace Jareel
 
             foreach (var property in properties) {
                 var attrib = (StateDataAttribute)property.GetCustomAttributes(typeof(StateDataAttribute), true).First();
-                string name = string.IsNullOrEmpty(attrib.Name) ? property.Name : attrib.Name;
 
+                string name = string.IsNullOrEmpty(attrib.Name) ? property.Name : attrib.Name;
                 DataContainers.Add(StateDataContainer.GetStateContainer(name, property, ProcessedState));
             }
         }

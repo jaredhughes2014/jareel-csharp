@@ -22,12 +22,19 @@ namespace Jareel
         public abstract object Value { get; set; }
 
         /// <summary>
+        /// If true, this container holds persistent data (which should always be serialized)
+        /// </summary>
+        public bool Persistent { get; private set; }
+
+        /// <summary>
         /// Creates a new StateDataContainer
         /// </summary>
         /// <param name="name">The export name of the data</param>
-        public StateDataContainer(string name)
+        /// <param name="persistent">If true, this container will always be included in a state export</param>
+        public StateDataContainer(string name, bool persistent)
         {
             Name = name;
+            Persistent = persistent;
         }
 
         /// <summary>

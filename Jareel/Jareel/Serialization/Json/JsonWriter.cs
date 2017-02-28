@@ -10,7 +10,7 @@ namespace Jareel
     /// Static wrapper class for converting a state data dictionary
     /// into a JSON string
     /// </summary>
-    public static class JsonWriter
+    internal static class JsonWriter
     {
         #region Constants
 
