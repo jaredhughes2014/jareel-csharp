@@ -17,44 +17,13 @@ namespace Jareel
         /// to do so will result in a runtime exception), so this will always be a distinct
         /// set of controllers
         /// </summary>
-        private AbstractController[] Controllers
-        {
-            get
-            {
-                var controllerMap = new Dictionary<Type, AbstractController>();
-
-                foreach (var chain in Chains) {
-                    RecursiveControllerExtraction(chain, controllerMap);
-                }
-                return controllerMap.Select(p => p.Value).ToArray();
-            }
-        }
-
-        /// <summary>
-        /// Recursive helper function for extracting all controllers from each execution chain. Because
-        /// chains can have multiple children, it's necessary to recurse through each child and extract
-        /// its children as well. This equates to a depth-first search in a B-tree
-        /// </summary>
-        /// <param name="chain">The chain to recursively add all children from</param>
-        /// <param name="accum">Reference dictionary used to store each child controller</param>
-        private void RecursiveControllerExtraction(AbstractExecutionChain chain, Dictionary<Type, AbstractController> accum)
-        {
-            // If a controller type has already been encountered, this will assume it is a child of multiple controllers
-            var controllerType = chain.AbstractController.GetType();
-            if (!accum.ContainsKey(controllerType)) {
-                accum.Add(controllerType, chain.AbstractController);
-            }
-
-            foreach (var child in chain.Children) {
-                RecursiveControllerExtraction(child, accum);
-            }
-        }
+        private List<AbstractController> Controllers { get; set; }
 
         /// <summary>
         /// Stores all execution chains defined for this controller
         /// </summary>
-        private List<AbstractExecutionChain> m_chains;
-        internal List<AbstractExecutionChain> Chains { get { return m_chains; } }
+        private List<ExecutionChain> m_chains;
+        internal List<ExecutionChain> Chains { get { return m_chains; } }
 
         #endregion
 
@@ -65,15 +34,13 @@ namespace Jareel
         /// </summary>
         public MasterController()
         {
-            m_chains = new List<AbstractExecutionChain>();
-            BuildChains();
-            VerifyStateUniqueness();
-        }
+            m_chains = new List<ExecutionChain>();
+            Controllers = new List<AbstractController>();
 
-        /// <summary>
-        /// Overload to build your execution chains
-        /// </summary>
-        protected abstract void BuildChains();
+            UseControllers();
+            VerifyStateUniqueness();
+            BuildChains();
+        }
 
         /// <summary>
         /// Verifies that there exists only one controller for each type of state
@@ -81,28 +48,39 @@ namespace Jareel
         /// </summary>
         private void VerifyStateUniqueness()
         {
-            var dict = new Dictionary<Type, int>();
+            var typeMap = new Dictionary<Type, int>();
 
             foreach (var controller in Controllers) {
                 Type type = controller.AbstractState.GetType();
 
-                if (dict.ContainsKey(type)) {
-                    dict[type] += 1;
+                if (typeMap.ContainsKey(type)) {
+                    typeMap[type] += 1;
                 }
                 else {
-                    dict.Add(type, 1);
+                    typeMap.Add(type, 1);
                 }
             }
 
+            ValidateTypeMap(typeMap);
+        }
+
+        /// <summary>
+        /// Validates that the type map generated from the registered controller types
+        /// are unique. Throws an exception if they are not.
+        /// 
+        /// Each state type should be used exactly once
+        /// </summary>
+        /// <param name="typeMap">Dictionary mapping state types to the number of controllers handling them</param>
+        private void ValidateTypeMap(Dictionary<Type, int> typeMap)
+        {
             StringBuilder err = new StringBuilder();
             err.Append("More the one controller exists for the following types:").Append('\n');
             bool errExists = false;
 
-            foreach (var kv in dict) {
-                if (kv.Value > 1) {
-                    errExists = true;
-                    err.Append(string.Format("{0}({1})", kv.Key.Name, kv.Value)).Append('\n');
-                }
+            foreach (string message in typeMap.Where(p => p.Value > 1)
+                                              .Select(p => string.Format("{0}({1})", p.Key.Name, p.Value))) {
+                err.Append(message).Append('\n');
+                errExists = true;
             }
 
             if (errExists) {
@@ -145,18 +123,48 @@ namespace Jareel
         #region Execution Chains
 
         /// <summary>
-        /// Creates a new execution chain which operates with a controller and state of the types
-        /// specified
+        /// Overload to call your Use() functions. Every controller type you plan
+        /// on using must be used here
         /// </summary>
-        /// <typeparam name="S">The state type. Required due to generic limitations with C#</typeparam>
-        /// <typeparam name="C">The controller type. The controller must use state type S</typeparam>
-        /// <returns>The executio>n chain created</returns>
-        public ExecutionChain<S, C> StartChain<S, C>() 
-            where S : State, new() where C : StateController<S>, new()
+        protected abstract void UseControllers();
+
+        /// <summary>
+        /// Declares a state and controller type that will be used
+        /// </summary>
+        /// <typeparam name="S"></typeparam>
+        /// <typeparam name="C"></typeparam>
+        protected void Use<S, C>() where S : State, new() where C : StateController<S>, new()
         {
-            var chain = new ExecutionChain<S, C>();
-            m_chains.Add(chain);
-            return chain;
+            C controller = new C();
+            controller.AbstractState = new S();
+
+            Controllers.Add(controller);
+        }
+
+        /// <summary>
+        /// Extracts all state adapters from every used controller. Once all chains have
+        /// been extracted, builds execution chains
+        /// </summary>
+        private void BuildChains()
+        {
+            var stateTypes = Controllers.ToDictionary(p => p.AbstractState.GetType(), q => q);
+            var adapters = Controllers.ToDictionary(p => p, q => StateAdapter.ExtractStateAdapters(q));
+
+            var chains = adapters.OrderBy(p => p.Value.Length)
+                                 .Select(p => p.Key)
+                                 .ToDictionary(p => p, q => new ExecutionChain(q));
+            
+            foreach (var kv in adapters) {
+                foreach (var adapter in kv.Value) {
+                    var parent = chains[stateTypes[adapter.Method.GetParameters().First().ParameterType]];
+                    parent.AddChild(chains[kv.Key], adapter);
+                }
+            }
+
+            // Only chains that do not require adapters are used at the top
+            m_chains = adapters.Where(p => p.Value.Length == 0)
+                               .Select(p => chains[p.Key])
+                               .ToList();
         }
 
         #endregion

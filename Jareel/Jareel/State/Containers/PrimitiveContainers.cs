@@ -44,7 +44,7 @@ namespace Jareel
         /// <param name="name">The name of the data in this container</param>
         /// <param name="getMethod">Method used to get data from this container</param>
         /// <param name="setMethod">Method used to set data in this container</param>
-        public StateStringContainer(string name, Func<string> getMethod, Action<string> setMethod) : base(name)
+        public StateStringContainer(string name, bool persistent, Func<string> getMethod, Action<string> setMethod) : base(name, persistent)
         {
             m_getMethod = getMethod;
             m_setMethod = setMethod;
@@ -93,7 +93,7 @@ namespace Jareel
         /// <param name="name">The name of the data in this container</param>
         /// <param name="getMethod">Method used to get data from this container</param>
         /// <param name="setMethod">Method used to set data in this container</param>
-        public StateIntegerContainer(string name, Func<int> getMethod, Action<int> setMethod) : base(name)
+        public StateIntegerContainer(string name, bool persistent, Func<int> getMethod, Action<int> setMethod) : base(name, persistent)
         {
             m_getMethod = getMethod;
             m_setMethod = setMethod;
@@ -142,7 +142,7 @@ namespace Jareel
         /// <param name="name">The name of the data in this container</param>
         /// <param name="getMethod">Method used to get data from this container</param>
         /// <param name="setMethod">Method used to set data in this container</param>
-        public StateFloatContainer(string name, Func<float> getMethod, Action<float> setMethod) : base(name)
+        public StateFloatContainer(string name, bool persistent, Func<float> getMethod, Action<float> setMethod) : base(name, persistent)
         {
             m_getMethod = getMethod;
             m_setMethod = setMethod;
@@ -191,7 +191,7 @@ namespace Jareel
         /// <param name="name">The name of the data in this container</param>
         /// <param name="getMethod">Method used to get data from this container</param>
         /// <param name="setMethod">Method used to set data in this container</param>
-        public StateBooleanContainer(string name, Func<bool> getMethod, Action<bool> setMethod) : base(name)
+        public StateBooleanContainer(string name, bool persistent, Func<bool> getMethod, Action<bool> setMethod) : base(name, persistent)
         {
             m_getMethod = getMethod;
             m_setMethod = setMethod;

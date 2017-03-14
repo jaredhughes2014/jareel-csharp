@@ -114,7 +114,7 @@ namespace Jareel
                 var attrib = (StateDataAttribute)property.GetCustomAttributes(typeof(StateDataAttribute), true).First();
 
                 string name = string.IsNullOrEmpty(attrib.Name) ? property.Name : attrib.Name;
-                DataContainers.Add(StateDataContainer.GetStateContainer(name, property, ProcessedState));
+                DataContainers.Add(StateDataContainer.GetStateContainer(name, attrib.Persistent, property, ProcessedState));
             }
         }
 

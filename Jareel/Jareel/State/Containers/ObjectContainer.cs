@@ -36,7 +36,7 @@ namespace Jareel
         /// </summary>
         /// <param name="name">The export name of the object</param>
         /// <param name="state">The state object</param>
-        public ObjectContainer(string name, StateObject state) : base(name)
+        public ObjectContainer(string name, bool persistent, StateObject state) : base(name, persistent)
         {
             m_converter = new StateConverter(state);
         }
