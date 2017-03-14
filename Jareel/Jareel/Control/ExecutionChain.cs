@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System;
+using System.Reflection;
 
 namespace Jareel
 {
@@ -66,7 +67,7 @@ namespace Jareel
         /// as a parent
         /// </summary>
         /// <param name="child">The child execution chain</param>
-        internal void AddChild(ExecutionChain child, Action<State, State> adapter)
+        internal void AddChild(ExecutionChain child, MethodInfo adapter)
         {
             Children.Add(child);
             child.Parents.Add(this);

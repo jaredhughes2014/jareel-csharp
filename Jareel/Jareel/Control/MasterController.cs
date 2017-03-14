@@ -156,7 +156,7 @@ namespace Jareel
             
             foreach (var kv in adapters) {
                 foreach (var adapter in kv.Value) {
-                    var parent = chains[stateTypes[adapter.Method.GetParameters().First().ParameterType]];
+                    var parent = chains[stateTypes[adapter.GetParameters().First().ParameterType]];
                     parent.AddChild(chains[kv.Key], adapter);
                 }
             }

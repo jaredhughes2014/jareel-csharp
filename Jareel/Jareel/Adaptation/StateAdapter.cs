@@ -33,7 +33,7 @@ namespace Jareel
         /// <summary>
         /// Callback executed to perform the adaptation
         /// </summary>
-        private Action<State, State> _adaptationCallback;
+        private MethodInfo _adaptationCallback;
 
         #endregion
 
@@ -45,7 +45,7 @@ namespace Jareel
         /// <param name="source">Controller whose state is the source of adaptation</param>
         /// <param name="target">Controller whose state is the target of adaptation</param>
         /// <param name="adapter">Function used to perform the adaptation</param>
-        public StateAdapter(AbstractController source, AbstractController target, Action<State, State> adapter)
+        public StateAdapter(AbstractController source, AbstractController target, MethodInfo adapter)
         {
             _sourceController = source;
             _targetController = target;
@@ -57,13 +57,12 @@ namespace Jareel
         /// </summary>
         /// <param name="controller">The controller to extract state adapters from</param>
         /// <returns>All functions marked with a StateAdapterAttribute which accepts two state objects</returns>
-        public static Action<State, State>[] ExtractStateAdapters(AbstractController controller)
+        public static MethodInfo[] ExtractStateAdapters(AbstractController controller)
         {
             return controller.GetType()
                              .GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
                              .Where(p => Attribute.IsDefined(p, typeof(StateAdapterAttribute)))
                              .Where(p => ValidateAdapterParameters(p))
-                             .Select(p => (Action<State, State>)Delegate.CreateDelegate(typeof(Action<State, State>), controller, p))
                              .ToArray();
         }
 
@@ -76,9 +75,8 @@ namespace Jareel
         {
             var parameters = adapter.GetParameters();
 
-            return parameters.Length == 2 &&
-                   parameters.Select(p => p.ParameterType)
-                             .All(p => p.IsSubclassOf(typeof(State)));
+            return parameters.Length == 1 &&
+                   parameters.Select(p => p.ParameterType).All(p => p.IsSubclassOf(typeof(State)));
         }
 
         #endregion
@@ -90,7 +88,7 @@ namespace Jareel
         /// </summary>
         public void Adapt()
         {
-            _adaptationCallback(_sourceController.AbstractCloneState(), _targetController.AbstractState);
+            _adaptationCallback.Invoke(_targetController, new object[] { _sourceController.AbstractCloneState() });
             _targetController.Dirty = true;
         }
 
