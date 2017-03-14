@@ -28,13 +28,16 @@ namespace Jareel
         /// <summary>
         /// Overridden to include the processed state update 
         /// </summary>
-        internal override void Update()
+        internal override bool Update()
         {
-            ProcessEvents();
-            ProcessedState = new P();
-            ProcessState(State, ProcessedState);
+            if (ProcessEvents()) {
+                ProcessedState = new P();
+                ProcessState(State, ProcessedState);
 
-            OnStateChange();
+                OnStateChange();
+                return true;
+            }
+            return false;
         }
 
         /// <summary>

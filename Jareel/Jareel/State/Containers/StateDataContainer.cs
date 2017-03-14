@@ -22,12 +22,19 @@ namespace Jareel
         public abstract object Value { get; set; }
 
         /// <summary>
+        /// If true, this container holds persistent data (which should always be serialized)
+        /// </summary>
+        public bool Persistent { get; private set; }
+
+        /// <summary>
         /// Creates a new StateDataContainer
         /// </summary>
         /// <param name="name">The export name of the data</param>
-        public StateDataContainer(string name)
+        /// <param name="persistent">If true, this container will always be included in a state export</param>
+        public StateDataContainer(string name, bool persistent)
         {
             Name = name;
+            Persistent = persistent;
         }
 
         /// <summary>
@@ -37,25 +44,25 @@ namespace Jareel
         /// <param name="name">The export name of the container</param>
         /// <param name="container">The state object that contains this state</param>
         /// <returns>State data container used to access and modify the given property</returns>
-        public static StateDataContainer GetStateContainer(string name, PropertyInfo prop, StateObject container)
+        public static StateDataContainer GetStateContainer(string name, bool persistent, PropertyInfo prop, StateObject container)
         {
             var type = prop.PropertyType;
 
             if (type == typeof(string)) {
-                return new StateStringContainer(name, ConvertGetMethod<string>(prop, container), ConvertSetMethod<string>(prop, container));
+                return new StateStringContainer(name, persistent, ConvertGetMethod<string>(prop, container), ConvertSetMethod<string>(prop, container));
             }
             else if (type == typeof(int)) {
-                return new StateIntegerContainer(name, ConvertGetMethod<int>(prop, container), ConvertSetMethod<int>(prop, container));
+                return new StateIntegerContainer(name, persistent, ConvertGetMethod<int>(prop, container), ConvertSetMethod<int>(prop, container));
             }
             else if (type == typeof(float)) {
-                return new StateFloatContainer(name, ConvertGetMethod<float>(prop, container), ConvertSetMethod<float>(prop, container));
+                return new StateFloatContainer(name, persistent, ConvertGetMethod<float>(prop, container), ConvertSetMethod<float>(prop, container));
             }
             else if (type == typeof(bool)) {
-                return new StateBooleanContainer(name, ConvertGetMethod<bool>(prop, container), ConvertSetMethod<bool>(prop, container));
+                return new StateBooleanContainer(name, persistent, ConvertGetMethod<bool>(prop, container), ConvertSetMethod<bool>(prop, container));
             }
             else if (type.IsSubclassOf(typeof(StateObject))) {
                 object value = prop.GetValue(container, null);
-                return new ObjectContainer(name, (StateObject)value);
+                return new ObjectContainer(name, persistent, (StateObject)value);
             }
             else {
                 throw new ArgumentException("Unsupported state data type: " + type.Name);

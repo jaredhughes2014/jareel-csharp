@@ -46,9 +46,9 @@ namespace Jareel
         protected object[] CachedValues { get; set; }
 
         /// <summary>
-        /// Set true by a state adapter that has adapted this controller's state
+        /// Set true when the state has changed and an update is needed
         /// </summary>
-        internal bool Adapted { get; set; }
+        internal bool Dirty { get; set; }
 
         #endregion
 
@@ -85,6 +85,7 @@ namespace Jareel
         internal void ImportState(Dictionary<string, object> data)
         {
             StateConverter.PopulateState(data);
+            Dirty = true;
         }
 
         #endregion
@@ -93,14 +94,17 @@ namespace Jareel
 
         /// <summary>
         /// Executes this system's state update. This should only be called by the master controller
+        /// Returns true if a state change results from this update
         /// </summary>
-        internal virtual void Update()
+        internal virtual bool Update()
         {
-            if (ProcessEvents() || Adapted) {
-                Adapted = false;
+            if (ProcessEvents() || Dirty) {
+                Dirty = false;
                 UpdateSubscribers();
                 OnStateChange();
+                return true;
             }
+            return false;
         }
 
         /// <summary>

@@ -8,7 +8,7 @@ namespace Jareel
     /// <summary>
     /// Static JSON reading library
     /// </summary>
-    public static class JsonReader
+    internal static class JsonReader
     {
         /// <summary>
         /// Serializes a JSON string into an object. The object returned
