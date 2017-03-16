@@ -18,6 +18,11 @@ namespace Jareel
         /// </summary>
         private List<EventListener> m_listeners;
 
+        /// <summary>
+        /// Used to store and process event listeners
+        /// </summary>
+        private EventManager m_manager;
+
         #endregion
 
         /// <summary>
@@ -25,15 +30,18 @@ namespace Jareel
         /// from the controller and prepares them for execution
         /// </summary>
         /// <param name="controller">The controller being converted to a listener set</param>
-        public ListenerConverter(AbstractController controller)
+        /// <param name="manager">Used to manage event listening</param>
+        public ListenerConverter(AbstractController controller, EventManager manager)
         {
             m_listeners = new List<EventListener>();
+            m_manager = manager;
+
             var methods = controller.GetType().GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
                                               .Where(p => Attribute.IsDefined(p, typeof(EventListenerAttribute)));
 
             foreach (var method in methods) {
                 var attrib = GetListener(method);
-                m_listeners.Add(Events.RegisterListener(attrib.Event, controller, method));
+                m_listeners.Add(m_manager.RegisterListener(attrib.Event, controller, method));
             }
         }
 
