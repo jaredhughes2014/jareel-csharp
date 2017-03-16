@@ -29,7 +29,7 @@ namespace Jareel
         /// Manages the registration and execution of events
         /// </summary>
         private EventManager m_events;
-        internal EventManager Events { get { return m_events; } }
+        public EventManager Events { get { return m_events; } }
 
         #endregion
 

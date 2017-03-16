@@ -29,7 +29,7 @@ namespace Jareel
         /// Manages the storing and execution of events
         /// </summary>
         private EventManager m_events;
-        protected EventManager Events { get { return m_events; } }
+        public EventManager Events { get { return m_events; } }
 
         /// <summary>
         /// Used for state serialization and content checking

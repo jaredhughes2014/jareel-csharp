@@ -24,7 +24,7 @@ namespace Jareel
         /// <summary>
         /// Creates a new event manager
         /// </summary>
-        public EventManager()
+        internal EventManager()
         {
             m_eventMap = new Dictionary<Type, Dictionary<object, List<EventListener>>>();
         }
