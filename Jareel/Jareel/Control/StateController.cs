@@ -42,9 +42,9 @@ namespace Jareel
         internal ListenerConverter Listeners { get; set; }
 
         /// <summary>
-        /// All subscribers
+        /// All subscribers spawned for the state type
         /// </summary>
-        protected List<AbstractStateSubscriber> Subscribers { get; private set; }
+        internal List<AbstractStateSubscriber> Subscribers { get; private set; }
 
         /// <summary>
         /// Set true when the state has changed and an update is needed
@@ -173,18 +173,12 @@ namespace Jareel
         /// <returns>State subscriber that will receive updates to this controller's state</returns>
         internal AbstractStateSubscriber SpawnSubscriber()
         {
-            var sub = CreateSubscriber();
+            var sub = new AbstractStateSubscriber();
             Subscribers.Add(sub);
 
             sub.AbstractState = AbstractCloneState();
             return sub;
         }
-
-        /// <summary>
-        /// Type-specific state subscribers must define how a subscriber is created
-        /// </summary>
-        /// <returns>Abstract state subscriber to add to this controller</returns>
-        protected abstract AbstractStateSubscriber CreateSubscriber();
 
         #endregion
     }
@@ -217,15 +211,6 @@ namespace Jareel
         internal override State AbstractCloneState()
         {
             return CloneState();
-        }
-
-        /// <summary>
-        /// Creates a type-specific state subscriber
-        /// </summary>
-        /// <returns>State subscriber specified to this state type</returns>
-        protected override AbstractStateSubscriber CreateSubscriber()
-        {
-            return new StateSubscriber<T>();
         }
 
         /// <summary>

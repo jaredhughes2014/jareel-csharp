@@ -183,16 +183,82 @@ namespace Jareel
         /// within a master controller, so this is guaranteed to subscribe to the correct
         /// state type
         /// </summary>
-        /// <typeparam name="T">The state type</typeparam>
-        /// <returns>Subscriber to the state of type T</returns>
-        public StateSubscriber<T> SpawnSubscriber<T>() where T : State
+        /// <param name="stateType">The state type</param>
+        /// <returns>Subscriber to the state of given type</returns>
+        private AbstractStateSubscriber SpawnSubscriber(Type stateType)
         {
             foreach (var controller in m_controllers) {
-                if (controller.AbstractState.GetType() == typeof(T)) {
-                    return (StateSubscriber<T>)controller.SpawnSubscriber();
+                if (controller.AbstractState.GetType() == stateType) {
+                    return controller.SpawnSubscriber();
                 }
             }
-            throw new ArgumentException(string.Format("No controllers for state of type {0}", typeof(T).Name));
+            throw new ArgumentException(string.Format("No controllers for state of type {0}", stateType.Name));
+        }
+
+        /// <summary>
+        /// Packages subscribers for each given state type into a single multiple state subscriber
+        /// </summary>
+        /// <param name="stateTypes">Array of types representing the states that should be subscribed to</param>
+        /// <returns>MultipleStateSubscriber containing subscribers for each state type</returns>
+        private MultipleStateSubscriber GenerateSubscribers(params Type[] stateTypes)
+        {
+            return new MultipleStateSubscriber(stateTypes.Select(p => SpawnSubscriber(p)).ToArray());
+        }
+
+        /// <summary>
+        /// Creates a subscriber to the given state type
+        /// </summary>
+        /// <typeparam name="A">The type of state to subscribe to</typeparam>
+        /// <returns>Subscriber to the given state type</returns>
+        public StateSubscriber<A> SubscribeToStates<A>()
+            where A : State, new()
+        {
+            return new StateSubscriber<A>(GenerateSubscribers(typeof(A)));
+        }
+
+        /// <summary>
+        /// Creates a subscriber to two distinct state types
+        /// </summary>
+        /// <typeparam name="A">First distinct state type</typeparam>
+        /// <typeparam name="B">Second distinct state type</typeparam>
+        /// <returns>Subscriber containing individual subscribers to each of the two state types</returns>
+        public StateSubscriber<A, B> SubscribeToStates<A, B>()
+            where A : State, new()
+            where B : State, new()
+        {
+            return new StateSubscriber<A, B>(GenerateSubscribers(typeof(A), typeof(B)));
+        }
+
+        /// <summary>
+        /// Creates a subscriber to three distinct state types
+        /// </summary>
+        /// <typeparam name="A">First distinct state type</typeparam>
+        /// <typeparam name="B">Second distinct state type</typeparam>
+        /// <typeparam name="C">Third distinct state type</typeparam>
+        /// <returns>Subscriber containing individual subscribers to each of the three state types</returns>
+        public StateSubscriber<A, B, C> SubscribeToStates<A, B, C>()
+            where A : State, new()
+            where B : State, new()
+            where C : State, new()
+        {
+            return new StateSubscriber<A, B, C>(GenerateSubscribers(typeof(A), typeof(B), typeof(C)));
+        }
+
+        /// <summary>
+        /// Creates a subscriber to four distinct state types
+        /// </summary>
+        /// <typeparam name="A">First distinct state type</typeparam>
+        /// <typeparam name="B">Second distinct state type</typeparam>
+        /// <typeparam name="C">Third distinct state type</typeparam>
+        /// <typeparam name="D">Fourth distinct state type</typeparam>
+        /// <returns>Subscriber containing individual subscribers to each of the four state types</returns>
+        public StateSubscriber<A, B, C, D> SubscribeToStates<A, B, C, D>()
+            where A : State, new()
+            where B : State, new()
+            where C : State, new()
+            where D : State, new()
+        {
+            return new StateSubscriber<A, B, C, D>(GenerateSubscribers(typeof(A), typeof(B), typeof(C), typeof(D)));
         }
 
         /// <summary>
@@ -201,11 +267,22 @@ namespace Jareel
         /// of state clones performed
         /// </summary>
         /// <param name="subscriber">The subscriber to unsubscribe</param>
-        public void DisconnectSubscriber(AbstractStateSubscriber subscriber)
+        private void DisconnectAbstractSubscriber(AbstractStateSubscriber subscriber)
         {
             // This has no effect if the subscriber is not subscribed
             foreach (var controller in m_controllers) {
                 controller.RemoveSubscriber(subscriber);
+            }
+        }
+
+        /// <summary>
+        /// Disconnects all state subscribers from the given state subscriber
+        /// </summary>
+        /// <param name="subscriber">State subscriber to disconnect</param>
+        public void DisconnectSubscriber(StateSubscriber subscriber)
+        {
+            foreach (var sub in subscriber.Subscribers.Subscribers) {
+                DisconnectAbstractSubscriber(sub);
             }
         }
 
