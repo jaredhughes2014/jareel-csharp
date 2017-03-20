@@ -26,6 +26,12 @@ namespace Jareel
         }
 
         /// <summary>
+        /// Manages the storing and execution of events
+        /// </summary>
+        private EventManager m_events;
+        public EventManager Events { get { return m_events; } }
+
+        /// <summary>
         /// Used for state serialization and content checking
         /// </summary>
         private StateConverter StateConverter { get; set; }
@@ -39,11 +45,6 @@ namespace Jareel
         /// All subscribers
         /// </summary>
         protected List<AbstractStateSubscriber> Subscribers { get; private set; }
-
-        /// <summary>
-        /// The previous cycle's state values
-        /// </summary>
-        protected object[] CachedValues { get; set; }
 
         /// <summary>
         /// Set true when the state has changed and an update is needed
@@ -60,8 +61,19 @@ namespace Jareel
         /// </summary>
         protected AbstractController()
         {
-            Listeners = new ListenerConverter(this);
             Subscribers = new List<AbstractStateSubscriber>();
+        }
+
+        /// <summary>
+        /// Initializes all controller data for the controller.
+        /// </summary>
+        /// <param name="events">Used to manage event execution and listening</param>
+        /// <param name="state">The state used by this controller</param>
+        internal void InitializeControllerData(EventManager events, State state)
+        {
+            m_events = events;
+            AbstractState = state;
+            Listeners = new ListenerConverter(this, m_events);
         }
 
         #endregion

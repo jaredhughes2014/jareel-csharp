@@ -10,7 +10,7 @@ namespace ConsoleApplication1
             var master = new TestMaster();
             var go = new SequentialExecutor(master);
 
-            Events.Execute("test");
+            master.Events.Execute("test");
             go.Execute();
             Console.WriteLine(master.ExportStates());
         }

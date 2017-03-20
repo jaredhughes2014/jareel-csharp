@@ -7,7 +7,7 @@ namespace Jareel
     /// <summary>
     /// Utility class used to store event listeners and execute events.
     /// </summary>
-    public static class Events
+    public class EventManager
     {
         #region Static Fields
 
@@ -15,7 +15,19 @@ namespace Jareel
         /// Mapping structure for mapping event types to event values to a list
         /// of listeners. Each executor in a list is mapped to the same event value
         /// </summary>
-        private static Dictionary<Type, Dictionary<object, List<EventListener>>> m_eventMap = new Dictionary<Type, Dictionary<object, List<EventListener>>>();
+        private Dictionary<Type, Dictionary<object, List<EventListener>>> m_eventMap;
+
+        #endregion
+
+        #region Setup
+
+        /// <summary>
+        /// Creates a new event manager
+        /// </summary>
+        internal EventManager()
+        {
+            m_eventMap = new Dictionary<Type, Dictionary<object, List<EventListener>>>();
+        }
 
         #endregion
 
@@ -27,7 +39,7 @@ namespace Jareel
         /// <param name="value">The event value</param>
         /// <param name="controller">The controller this listener comes from</param>
         /// <param name="method">The listener to invoke on event execution</param>
-        internal static EventListener RegisterListener(object value, AbstractController controller, MethodInfo method)
+        internal EventListener RegisterListener(object value, AbstractController controller, MethodInfo method)
         {
             var listener = new EventListener(controller, method);
             GetListenerList(value, true).Add(listener);
@@ -42,7 +54,7 @@ namespace Jareel
         /// <param name="value">The event value</param>
         /// <param name="create">If true, create an executor list if not found</param>
         /// <returns>The executor list, if one is found</returns>
-        private static List<EventListener> GetListenerList(object value, bool create)
+        private List<EventListener> GetListenerList(object value, bool create)
         {
             var eventType = value.GetType();
 
@@ -89,7 +101,7 @@ namespace Jareel
         /// </summary>
         /// <param name="ev">The event being executed</param>
         /// <param name="args">The arguments provided with the event</param>
-        public static void Execute(object ev, params object[] args)
+        public void Execute(object ev, params object[] args)
         {
             ExecutionSequence(false, ev, args);
         }
@@ -100,7 +112,7 @@ namespace Jareel
         /// </summary>
         /// <param name="ev">The event object</param>
         /// <param name="args">The arguments provided with the event</param>
-        public static void ExecuteStrict(object ev, params object[] args)
+        public void ExecuteStrict(object ev, params object[] args)
         {
             ExecutionSequence(true, ev, args);
         }
@@ -111,7 +123,7 @@ namespace Jareel
         /// <param name="strict">True if this is a strict event</param>
         /// <param name="ev">The event value</param>
         /// <param name="args">The arguments provided with the event</param>
-        private static void ExecutionSequence(bool strict, object ev, object[] args)
+        private void ExecutionSequence(bool strict, object ev, object[] args)
         {
             var argSet = new EventArgSet(strict, ev, args);
 

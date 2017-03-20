@@ -48,7 +48,7 @@
     <Compile Include="Events\EventExecutor.cs" />
     <Compile Include="Events\EventListener.cs" />
     <Compile Include="Events\EventListenerAttribute.cs" />
-    <Compile Include="Events\Events.cs" />
+    <Compile Include="Events\EventManager.cs" />
     <Compile Include="Events\ListenerConverter.cs" />
     <Compile Include="Execution\SequentialExecutor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

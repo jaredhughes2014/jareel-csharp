@@ -17,13 +17,19 @@ namespace Jareel
         /// to do so will result in a runtime exception), so this will always be a distinct
         /// set of controllers
         /// </summary>
-        private List<AbstractController> Controllers { get; set; }
+        private List<AbstractController> m_controllers;
 
         /// <summary>
         /// Stores all execution chains defined for this controller
         /// </summary>
         private List<ExecutionChain> m_chains;
         internal List<ExecutionChain> Chains { get { return m_chains; } }
+
+        /// <summary>
+        /// Manages the registration and execution of events
+        /// </summary>
+        private EventManager m_events;
+        public EventManager Events { get { return m_events; } }
 
         #endregion
 
@@ -35,7 +41,8 @@ namespace Jareel
         public MasterController()
         {
             m_chains = new List<ExecutionChain>();
-            Controllers = new List<AbstractController>();
+            m_events = new EventManager();
+            m_controllers = new List<AbstractController>();
 
             UseControllers();
             VerifyStateUniqueness();
@@ -50,7 +57,7 @@ namespace Jareel
         {
             var typeMap = new Dictionary<Type, int>();
 
-            foreach (var controller in Controllers) {
+            foreach (var controller in m_controllers) {
                 Type type = controller.AbstractState.GetType();
 
                 if (typeMap.ContainsKey(type)) {
@@ -99,7 +106,7 @@ namespace Jareel
         /// <returns>JSON object string containing all persistent state data</returns>
         public string ExportStates()
         {
-            var packaged = Controllers.ToDictionary(p => p.StateName,
+            var packaged = m_controllers.ToDictionary(p => p.StateName,
                                                     q => (object)q.DataMap);
             return Json.Write(packaged);
         }
@@ -113,7 +120,7 @@ namespace Jareel
         {
             var data = (Dictionary<string, object>)Json.Read(exportString);
 
-            foreach (var controller in Controllers) {
+            foreach (var controller in m_controllers) {
                 controller.ImportState((Dictionary<string, object>)data[controller.StateName]);
             }
         }
@@ -136,9 +143,9 @@ namespace Jareel
         protected void Use<S, C>() where S : State, new() where C : StateController<S>, new()
         {
             C controller = new C();
-            controller.AbstractState = new S();
+            controller.InitializeControllerData(Events, new S());
 
-            Controllers.Add(controller);
+            m_controllers.Add(controller);
         }
 
         /// <summary>
@@ -147,8 +154,8 @@ namespace Jareel
         /// </summary>
         private void BuildChains()
         {
-            var stateTypes = Controllers.ToDictionary(p => p.AbstractState.GetType(), q => q);
-            var adapters = Controllers.ToDictionary(p => p, q => StateAdapter.ExtractStateAdapters(q));
+            var stateTypes = m_controllers.ToDictionary(p => p.AbstractState.GetType(), q => q);
+            var adapters = m_controllers.ToDictionary(p => p, q => StateAdapter.ExtractStateAdapters(q));
 
             var chains = adapters.OrderBy(p => p.Value.Length)
                                  .Select(p => p.Key)
@@ -180,7 +187,7 @@ namespace Jareel
         /// <returns>Subscriber to the state of type T</returns>
         public StateSubscriber<T> SpawnSubscriber<T>() where T : State
         {
-            foreach (var controller in Controllers) {
+            foreach (var controller in m_controllers) {
                 if (controller.AbstractState.GetType() == typeof(T)) {
                     return (StateSubscriber<T>)controller.SpawnSubscriber();
                 }
@@ -197,7 +204,7 @@ namespace Jareel
         public void DisconnectSubscriber(AbstractStateSubscriber subscriber)
         {
             // This has no effect if the subscriber is not subscribed
-            foreach (var controller in Controllers) {
+            foreach (var controller in m_controllers) {
                 controller.RemoveSubscriber(subscriber);
             }
         }
