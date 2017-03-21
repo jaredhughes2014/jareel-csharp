@@ -115,6 +115,11 @@ namespace Jareel
         /// </summary>
         internal MultipleStateSubscriber Subscribers { get; private set; }
 
+		/// <summary>
+		/// Returns true if any of the subscribed states have updated
+		/// </summary>
+		public bool Updated { get { return Subscribers.Updated; } }
+
         /// <summary>
         /// Creates a new state subscriber
         /// </summary>
