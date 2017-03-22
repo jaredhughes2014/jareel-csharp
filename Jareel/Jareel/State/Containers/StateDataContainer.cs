@@ -67,11 +67,11 @@ namespace Jareel
                 object value = prop.GetValue(container, null);
                 return new ObjectContainer(name, persistent, (StateObject)value);
             }
-            else if (type.GetInterfaces().Contains(typeof(IEnumerable)) && type.ContainsGenericParameters) {
+            else if (type.GetInterfaces().Contains(typeof(IList)) && type.IsGenericType) {
                 var generics = type.GetGenericArguments();
 
                 if (generics.Length == 1) {
-                    return ConvertEnumerable(name, persistent, prop.GetValue(container, null), generics[0]);
+                    return ConvertEnumerable(name, persistent, prop, container, generics[0]);
                 }
                 else {
                     throw new ArgumentException("Jareel only supports generic enumerables with 1 generic type");
@@ -90,19 +90,19 @@ namespace Jareel
         /// <param name="value">The enumerable to contain</param>
         /// <param name="childType">The type of the elements in the enumerable</param>
         /// <returns></returns>
-        private static StateDataContainer ConvertEnumerable(string name, bool persistent, object value, Type childType)
+        private static StateDataContainer ConvertEnumerable(string name, bool persistent, PropertyInfo prop, StateObject container, Type childType)
         {
             if (childType == typeof(string)) {
-                return new StringEnumerableContainer(name, persistent, (IEnumerable<string>)value);
+                return new StringListContainer(name, persistent, ConvertSetMethod<List<string>>(prop, container), ConvertGetMethod<List<string>>(prop, container));
             }
             else if (childType == typeof(int)) {
-                return new IntegerEnumerableContainer(name, persistent, (IEnumerable<int>)value);
+                return new IntegerListContainer(name, persistent, ConvertSetMethod<List<int>>(prop, container), ConvertGetMethod<List<int>>(prop, container));
             }
             else if (childType == typeof(float)) {
-                return new FloatEnumerableContainer(name, persistent, (IEnumerable<float>)value);
+                return new FloatListContainer(name, persistent, ConvertSetMethod<List<float>>(prop, container), ConvertGetMethod<List<float>>(prop, container));
             }
             else if (childType == typeof(bool)) {
-                return new BooleanEnumerableContainer(name, persistent, (IEnumerable<bool>)value);
+                return new BooleanListContainer(name, persistent, ConvertSetMethod<List<bool>>(prop, container), ConvertGetMethod<List<bool>>(prop, container));
             }
             else {
                 throw new ArgumentException("Unsupported enumerable data type: " + childType.Name);
