@@ -1,5 +1,8 @@
 ﻿
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 namespace Jareel
@@ -64,8 +67,45 @@ namespace Jareel
                 object value = prop.GetValue(container, null);
                 return new ObjectContainer(name, persistent, (StateObject)value);
             }
+            else if (type.GetInterfaces().Contains(typeof(IEnumerable)) && type.ContainsGenericParameters) {
+                var generics = type.GetGenericArguments();
+
+                if (generics.Length == 1) {
+                    return ConvertEnumerable(name, persistent, prop.GetValue(container, null), generics[0]);
+                }
+                else {
+                    throw new ArgumentException("Jareel only supports generic enumerables with 1 generic type");
+                }
+            }
             else {
                 throw new ArgumentException("Unsupported state data type: " + type.Name);
+            }
+        }
+
+        /// <summary>
+        /// Converts an enumerable type into an appropriate enumerable container
+        /// </summary>
+        /// <param name="name">The export name of the data</param>
+        /// <param name="persistent">If true, this data should be included in standard exports</param>
+        /// <param name="value">The enumerable to contain</param>
+        /// <param name="childType">The type of the elements in the enumerable</param>
+        /// <returns></returns>
+        private static StateDataContainer ConvertEnumerable(string name, bool persistent, object value, Type childType)
+        {
+            if (childType == typeof(string)) {
+                return new StringEnumerableContainer(name, persistent, (IEnumerable<string>)value);
+            }
+            else if (childType == typeof(int)) {
+                return new IntegerEnumerableContainer(name, persistent, (IEnumerable<int>)value);
+            }
+            else if (childType == typeof(float)) {
+                return new FloatEnumerableContainer(name, persistent, (IEnumerable<float>)value);
+            }
+            else if (childType == typeof(bool)) {
+                return new BooleanEnumerableContainer(name, persistent, (IEnumerable<bool>)value);
+            }
+            else {
+                throw new ArgumentException("Unsupported enumerable data type: " + childType.Name);
             }
         }
 
