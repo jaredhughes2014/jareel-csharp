@@ -1,5 +1,8 @@
 ﻿
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 namespace Jareel
@@ -64,9 +67,51 @@ namespace Jareel
                 object value = prop.GetValue(container, null);
                 return new ObjectContainer(name, persistent, (StateObject)value);
             }
+            else if (type.GetInterfaces().Contains(typeof(IList)) && type.IsGenericType) {
+                var generics = type.GetGenericArguments();
+
+                if (generics.Length == 1) {
+                    return ConvertEnumerable(name, persistent, prop, container, generics[0]);
+                }
+                else {
+                    throw new ArgumentException("Jareel only supports generic enumerables with 1 generic type");
+                }
+            }
             else {
                 throw new ArgumentException("Unsupported state data type: " + type.Name);
             }
+        }
+
+        /// <summary>
+        /// Converts an enumerable type into an appropriate enumerable container
+        /// </summary>
+        /// <param name="name">The export name of the data</param>
+        /// <param name="persistent">If true, this data should be included in standard exports</param>
+        /// <param name="value">The enumerable to contain</param>
+        /// <param name="childType">The type of the elements in the enumerable</param>
+        /// <returns></returns>
+        private static StateDataContainer ConvertEnumerable(string name, bool persistent, PropertyInfo prop, StateObject container, Type childType)
+        {
+			if (childType == typeof(string)) {
+				return new StringListContainer(name, persistent, ConvertSetMethod<List<string>>(prop, container), ConvertGetMethod<List<string>>(prop, container));
+			}
+			else if (childType == typeof(int)) {
+				return new IntegerListContainer(name, persistent, ConvertSetMethod<List<int>>(prop, container), ConvertGetMethod<List<int>>(prop, container));
+			}
+			else if (childType == typeof(float)) {
+				return new FloatListContainer(name, persistent, ConvertSetMethod<List<float>>(prop, container), ConvertGetMethod<List<float>>(prop, container));
+			}
+			else if (childType == typeof(bool)) {
+				return new BooleanListContainer(name, persistent, ConvertSetMethod<List<bool>>(prop, container), ConvertGetMethod<List<bool>>(prop, container));
+			}
+
+			//TODO This is very ugly and should be cleaned up
+			else if (childType.IsSubclassOf(typeof(StateObject))) {
+				return new ObjectListContainer(name, persistent, ConvertGetMethod<IList>(prop, container));
+			}
+			else {
+				throw new ArgumentException("Unsupported enumerable data type: " + childType.Name);
+			}
         }
 
         /// <summary>
@@ -92,7 +137,8 @@ namespace Jareel
         /// <returns>A function delegate which can be used to retrieve data from this property</returns>
         private static Func<T> ConvertGetMethod<T>(PropertyInfo prop, StateObject container)
         {
-            return (Func<T>)Delegate.CreateDelegate(typeof(Func<T>), container, prop.GetGetMethod());
+			var getMethod = prop.GetGetMethod();
+            return (Func<T>)Delegate.CreateDelegate(typeof(Func<T>), container, getMethod);
         }
     }
 }
