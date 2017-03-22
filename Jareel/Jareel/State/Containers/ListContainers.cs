@@ -28,7 +28,9 @@ namespace Jareel
         public override object Value 
         {
             get => m_getMethod().Select(p => p).ToArray();
-            set => m_setMethod(((int[])value).Select(p => p).ToList());
+            set {
+				m_setMethod(((object[])value).Cast<int>().ToList());
+			}
         }
 
         #endregion
@@ -68,7 +70,9 @@ namespace Jareel
         /// </summary>
         public override object Value {
             get => m_getMethod().Select(p => p).ToArray();
-            set => m_setMethod(((float[])value).Select(p => p).ToList());
+            set {
+				m_setMethod(((object[])value).Cast<float>().ToList());
+			}
         }
 
         #endregion
@@ -108,7 +112,9 @@ namespace Jareel
         /// </summary>
         public override object Value {
             get => m_getMethod().Select(p => p).ToArray();
-            set => m_setMethod(((bool[])value).Select(p => p).ToList());
+            set {
+				m_setMethod(((object[])value).Cast<bool>().ToList());
+			}
         }
 
         #endregion
@@ -148,8 +154,10 @@ namespace Jareel
         /// </summary>
         public override object Value {
             get => m_getMethod().Select(p => p).ToArray();
-            set => m_setMethod(((string[])value).Select(p => p).ToList());
-        }
+			set {
+				m_setMethod(((object[])value).Cast<string>().ToList());
+			}
+		}
 
         #endregion
 
@@ -164,4 +172,56 @@ namespace Jareel
             m_setMethod = setMethod;
         }
     }
+
+	/// <summary>
+	/// Contains a list of StateObjects
+	/// </summary>
+	internal class ObjectListContainer : StateDataContainer
+	{
+		/// <summary>
+		/// The method used to retrieve objects from the list
+		/// </summary>
+		private Func<List<StateObject>> m_getMethod;
+
+		/// <summary>
+		/// Interchange between the actual state data value and its serializable value
+		/// </summary>
+		public override object Value 
+		{
+			get {
+				var list = m_getMethod();
+
+				if (list != null) {
+					return m_getMethod().Select(p => new StateConverter(p)).Select(p => p.DataMap).ToArray();
+				}
+				else return null;
+			}
+			set {
+				if (m_getMethod == null) return;
+
+				var stateType = m_getMethod().GetType().GetGenericArguments()[0];
+				var objects = m_getMethod();
+				objects.Clear();
+
+				foreach (var dataMap in ((object[])value).Cast<Dictionary<string, object>>()) {
+					var newState = (StateObject)Activator.CreateInstance(stateType);
+					new StateConverter(newState).PopulateState(dataMap);
+
+					objects.Add(newState);
+				}
+			}
+		}
+
+		/// <summary>
+		/// Creates a new container
+		/// </summary>
+		/// <param name="name">The export name of the value</param>
+		/// <param name="persistent">If true, this data should be included in standard exports</param>
+		/// <param name="setMethod">The method used to set the value</param>
+		/// <param name="getMethod">The method used to retrieve the value</param>
+		public ObjectListContainer(string name, bool persistent, Func<List<StateObject>> getMethod) : base(name, persistent)
+		{
+			m_getMethod = getMethod;
+		}
+	}
 }

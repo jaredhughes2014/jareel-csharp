@@ -12,7 +12,9 @@ namespace ConsoleApplication1
 
             master.Events.Execute("test");
             go.Execute();
-            Console.WriteLine(master.ExportStates());
+			string state = master.ExportStates();
+            Console.WriteLine(state);
+			master.ImportState(state);
         }
     }
 }
