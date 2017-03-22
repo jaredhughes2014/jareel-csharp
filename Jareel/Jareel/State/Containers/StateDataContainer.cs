@@ -107,17 +107,7 @@ namespace Jareel
 
 			//TODO This is very ugly and should be cleaned up
 			else if (childType.IsSubclassOf(typeof(StateObject))) {
-				var getter = ConvertGetMethod<IEnumerable>(prop, container);
-
-				Func<List<StateObject>> getMethod = () => {
-					var newList = new List<StateObject>();
-					foreach (object data in getter()) {
-						newList.Add((StateObject)data);
-					}
-					return newList;
-				};
-
-				return new ObjectListContainer(name, persistent, getMethod);
+				return new ObjectListContainer(name, persistent, ConvertGetMethod<IList>(prop, container));
 			}
 			else {
 				throw new ArgumentException("Unsupported enumerable data type: " + childType.Name);

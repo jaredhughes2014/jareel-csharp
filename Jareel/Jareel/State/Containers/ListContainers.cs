@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -181,7 +182,7 @@ namespace Jareel
 		/// <summary>
 		/// The method used to retrieve objects from the list
 		/// </summary>
-		private Func<List<StateObject>> m_getMethod;
+		private Func<IList> m_getMethod;
 
 		/// <summary>
 		/// Interchange between the actual state data value and its serializable value
@@ -192,7 +193,7 @@ namespace Jareel
 				var list = m_getMethod();
 
 				if (list != null) {
-					return m_getMethod().Select(p => new StateConverter(p)).Select(p => p.DataMap).ToArray();
+					return m_getMethod().Cast<StateObject>().Select(p => new StateConverter(p)).Select(p => p.DataMap).ToArray();
 				}
 				else return null;
 			}
@@ -219,7 +220,7 @@ namespace Jareel
 		/// <param name="persistent">If true, this data should be included in standard exports</param>
 		/// <param name="setMethod">The method used to set the value</param>
 		/// <param name="getMethod">The method used to retrieve the value</param>
-		public ObjectListContainer(string name, bool persistent, Func<List<StateObject>> getMethod) : base(name, persistent)
+		public ObjectListContainer(string name, bool persistent, Func<IList> getMethod) : base(name, persistent)
 		{
 			m_getMethod = getMethod;
 		}

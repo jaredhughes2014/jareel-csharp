@@ -23,7 +23,6 @@ class TestState1 : State
     {
         BoolField = true;
 		List = new List<TestContainer>();
-		List.Add(new TestContainer());
     }
 }
 
@@ -32,8 +31,14 @@ class TestController1 : StateController<TestState1>
 {
     [EventListener("test")] public void DoSomething()
     {
-
+		State.List.Add(new TestContainer());
     }
+
+	[EventListener("reset")]
+	public void Reset()
+	{
+		State.List.Clear();
+	}
 
     public override TestState1 CloneState()
     {
