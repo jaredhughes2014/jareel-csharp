@@ -39,7 +39,7 @@ namespace Jareel
             var methods = controller.GetType().GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
                                               .Where(p => Attribute.IsDefined(p, typeof(EventListenerAttribute)));
 
-            foreach (var method in methods) {
+            foreach (var method in methods.OrderBy(p => GetListener(p).Priority)) {
                 var attrib = GetListener(method);
                 m_listeners.Add(m_manager.RegisterListener(attrib.Event, controller, method));
             }
