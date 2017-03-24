@@ -112,6 +112,20 @@ namespace Jareel
         }
 
         /// <summary>
+        /// Exports the complete form of all states into a JSOn object string. Each
+        /// controller is packaged into a separate object.
+        /// 
+        /// This export may be much larger than a standard export and importing this
+        /// state may have unexpected side-effects. Use at your own risk
+        /// </summary>
+        /// <returns>JSON object string containing all state data, even non-persistent</returns>
+        public string ExportDebugState()
+        {
+            var packaged = m_controllers.ToDictionary(p => p.StateName, q => (object)q.CompleteDataMap);
+            return Json.Write(packaged);
+        }
+
+        /// <summary>
         /// Imports data from a previously exported state object string. All states in this
         /// system will be populated with data from the previously exported states
         /// </summary>

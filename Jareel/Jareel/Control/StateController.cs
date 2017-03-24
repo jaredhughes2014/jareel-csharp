@@ -91,6 +91,11 @@ namespace Jareel
         internal Dictionary<string, object> DataMap { get { return StateConverter.DataMap; } }
 
         /// <summary>
+        /// The entire state of this controller exported. This includes data marked as not persistent
+        /// </summary>
+        internal Dictionary<string, object> CompleteDataMap { get { return StateConverter.CompleteDataMap; } }
+
+        /// <summary>
         /// Imports deserialized JSON data into this state controller
         /// </summary>
         /// <param name="data">Dictionary representing a deserialized JSON object</param>

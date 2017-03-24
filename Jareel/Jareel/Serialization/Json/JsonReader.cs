@@ -212,7 +212,7 @@ namespace Jareel
         /// <returns>True if the character is part of a numeric literal, false otherwise</returns>
         private static bool IsNumeric(char c)
         {
-            return (c == '.' || (c >= '0' && c <= '9'));
+            return (c == '.' || c == '-' || (c >= '0' && c <= '9'));
         }
 
         /// <summary>

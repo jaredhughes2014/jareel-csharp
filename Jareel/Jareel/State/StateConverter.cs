@@ -82,9 +82,6 @@ namespace Jareel
                 if (rawData.ContainsKey(container.Name)) {
                     container.Value = rawData[container.Name];
                 }
-                else {
-                    throw new ArgumentException(string.Format("Missing {0} key in data import for {1} container", container.Name, ContainerName));
-                }
             }
         }
 
@@ -118,8 +115,8 @@ namespace Jareel
 
             foreach (var property in properties) {
                 var attrib = (StateDataAttribute)property.GetCustomAttributes(typeof(StateDataAttribute), true).First();
-
                 string name = string.IsNullOrEmpty(attrib.Name) ? property.Name : attrib.Name;
+
                 DataContainers.Add(StateDataContainer.GetStateContainer(name, attrib.Persistent, property, ProcessedState));
             }
         }
