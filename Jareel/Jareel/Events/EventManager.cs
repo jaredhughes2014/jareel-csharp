@@ -9,13 +9,30 @@ namespace Jareel
     /// </summary>
     public class EventManager
     {
-        #region Static Fields
+        #region Events
+
+        /// <summary>
+        /// Event fired every time an event is executed.
+        /// </summary>
+        /// <param name="ev">The event object exeucted</param>
+        /// <param name="args">The arguments provided with the event</param>
+        internal delegate void OnEventExecutedHandler(object ev, object[] args);
+        internal event OnEventExecutedHandler OnEventExecuted;
+
+        #endregion
+
+        #region Fields
 
         /// <summary>
         /// Mapping structure for mapping event types to event values to a list
         /// of listeners. Each executor in a list is mapped to the same event value
         /// </summary>
         private Dictionary<Type, Dictionary<object, List<EventListener>>> m_eventMap;
+
+		/// <summary>
+		/// If true, at least one event has been registered since the last reset
+		/// </summary>
+		internal bool EventRegistered { get; private set; }
 
         #endregion
 
@@ -126,11 +143,22 @@ namespace Jareel
         private void ExecutionSequence(bool strict, object ev, object[] args)
         {
             var argSet = new EventArgSet(strict, ev, args);
+            OnEventExecuted?.Invoke(ev, args);
 
             foreach (var listener in GetListenerList(ev, false)) {
                 listener.QueueEvent(argSet.Copy());
             }
+
+			EventRegistered = true;
         }
+
+		/// <summary>
+		/// Resets the event registration.
+		/// </summary>
+		internal void ResetEventRegistration()
+		{
+			EventRegistered = false;
+		}
 
         #endregion
     }
