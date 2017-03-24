@@ -18,18 +18,44 @@ namespace Jareel
     [AttributeUsage(AttributeTargets.Method, AllowMultiple =false)]
     public class EventListenerAttribute : Attribute
     {
-        /// <summary>
-        /// The object used as an event
-        /// </summary>
-        public object Event { get; private set; }
+		#region Priorities
 
-        /// <summary>
-        /// Event listener attribute with a given event object
-        /// </summary>
-        /// <param name="ev">The event that will trigger this listener</param>
-        public EventListenerAttribute(object ev)
+		/// <summary>
+		/// The object used as an event
+		/// </summary>
+		public object Event { get; private set; }
+
+		/// <summary>
+		/// The priority of this attribute. Lower priorites will always execute first, and listeners
+		/// with no priority will always execute after those with priorities
+		/// </summary>
+		public int Priority { get; private set; }
+
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Event listener attribute with a given event object and a given priority. Lower priorities will
+		/// always be executed first
+		/// </summary>
+		/// <param name="ev">The event that will trigger this listener</param>
+		/// <param name="priority">The priority of this listener. Lower priorities will be executed first</param>
+		public EventListenerAttribute(object ev, int priority)
         {
             Event = ev;
+			Priority = priority;
         }
-    }
+
+		/// <summary>
+		/// Creates an event listener attribute with a given event object and no defined priority. This will
+		/// always execute after event listeners with on the same controller defined priorities 
+		/// </summary>
+		/// <param name="ev">The event that will trigger this listener</param>
+		public EventListenerAttribute(object ev) : this(ev, int.MaxValue)
+		{
+		}
+
+		#endregion
+	}
 }
