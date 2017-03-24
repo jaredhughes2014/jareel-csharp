@@ -78,7 +78,13 @@ namespace Jareel
         public void PopulateState(Dictionary<string, object> rawData)
         {
             foreach (var container in DataContainers) {
-                container.Value = rawData[container.Name];
+
+                if (rawData.ContainsKey(container.Name)) {
+                    container.Value = rawData[container.Name];
+                }
+                else {
+                    throw new ArgumentException(string.Format("Missing {0} key in data import for {1} container", container.Name, ContainerName));
+                }
             }
         }
 
