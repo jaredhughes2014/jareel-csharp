@@ -78,7 +78,10 @@ namespace Jareel
         public void PopulateState(Dictionary<string, object> rawData)
         {
             foreach (var container in DataContainers) {
-                container.Value = rawData[container.Name];
+
+                if (rawData.ContainsKey(container.Name)) {
+                    container.Value = rawData[container.Name];
+                }
             }
         }
 
@@ -112,8 +115,8 @@ namespace Jareel
 
             foreach (var property in properties) {
                 var attrib = (StateDataAttribute)property.GetCustomAttributes(typeof(StateDataAttribute), true).First();
-
                 string name = string.IsNullOrEmpty(attrib.Name) ? property.Name : attrib.Name;
+
                 DataContainers.Add(StateDataContainer.GetStateContainer(name, attrib.Persistent, property, ProcessedState));
             }
         }
