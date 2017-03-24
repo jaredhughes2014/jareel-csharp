@@ -10,6 +10,18 @@ namespace Jareel
     /// </summary>
     public abstract class MasterController
     {
+        #region Events
+
+        /// <summary>
+        /// Event fired every time an event is executed.
+        /// </summary>
+        /// <param name="ev">The event object exeucted</param>
+        /// <param name="args">The arguments provided with the event</param>
+        public delegate void OnEventExecutedHandler(object ev, object[] args);
+        public event OnEventExecutedHandler OnEventExecuted;
+
+        #endregion
+
         #region Fields
 
         /// <summary>
@@ -47,6 +59,8 @@ namespace Jareel
             UseControllers();
             VerifyStateUniqueness();
             BuildChains();
+
+            Events.OnEventExecuted += DistributeEventPlayback;
         }
 
         /// <summary>
@@ -298,6 +312,20 @@ namespace Jareel
             foreach (var sub in subscriber.Subscribers.Subscribers) {
                 DisconnectAbstractSubscriber(sub);
             }
+        }
+
+        #endregion
+
+        #region Events
+
+        /// <summary>
+        /// Distributes the event manager's event playback to any external playbacks
+        /// </summary>
+        /// <param name="ev">The event object executed</param>
+        /// <param name="args">The arguments provided to the event</param>
+        private void DistributeEventPlayback(object ev, object[] args)
+        {
+            OnEventExecuted?.Invoke(ev, args);
         }
 
         #endregion

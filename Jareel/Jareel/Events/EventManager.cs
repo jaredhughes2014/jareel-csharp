@@ -9,7 +9,19 @@ namespace Jareel
     /// </summary>
     public class EventManager
     {
-        #region Static Fields
+        #region Events
+
+        /// <summary>
+        /// Event fired every time an event is executed.
+        /// </summary>
+        /// <param name="ev">The event object exeucted</param>
+        /// <param name="args">The arguments provided with the event</param>
+        internal delegate void OnEventExecutedHandler(object ev, object[] args);
+        internal event OnEventExecutedHandler OnEventExecuted;
+
+        #endregion
+
+        #region Fields
 
         /// <summary>
         /// Mapping structure for mapping event types to event values to a list
@@ -126,6 +138,7 @@ namespace Jareel
         private void ExecutionSequence(bool strict, object ev, object[] args)
         {
             var argSet = new EventArgSet(strict, ev, args);
+            OnEventExecuted?.Invoke(ev, args);
 
             foreach (var listener in GetListenerList(ev, false)) {
                 listener.QueueEvent(argSet.Copy());
