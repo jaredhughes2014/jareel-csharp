@@ -29,6 +29,11 @@ namespace Jareel
         /// </summary>
         private Dictionary<Type, Dictionary<object, List<EventListener>>> m_eventMap;
 
+		/// <summary>
+		/// If true, at least one event has been registered since the last reset
+		/// </summary>
+		internal bool EventRegistered { get; private set; }
+
         #endregion
 
         #region Setup
@@ -143,7 +148,17 @@ namespace Jareel
             foreach (var listener in GetListenerList(ev, false)) {
                 listener.QueueEvent(argSet.Copy());
             }
+
+			EventRegistered = true;
         }
+
+		/// <summary>
+		/// Resets the event registration.
+		/// </summary>
+		internal void ResetEventRegistration()
+		{
+			EventRegistered = false;
+		}
 
         #endregion
     }
