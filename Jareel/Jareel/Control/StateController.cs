@@ -62,6 +62,7 @@ namespace Jareel
         protected AbstractController()
         {
             Subscribers = new List<AbstractStateSubscriber>();
+            Dirty = true;
         }
 
         /// <summary>

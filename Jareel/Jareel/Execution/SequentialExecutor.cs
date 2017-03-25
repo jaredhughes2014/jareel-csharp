@@ -34,6 +34,9 @@ namespace Jareel
         {
             m_controller = controller;
 			m_timeTravelers = new List<TimeTraveler>();
+
+            // Execute once to make sure all states are initialized
+            ForceExecute();
         }
 
 		#endregion
